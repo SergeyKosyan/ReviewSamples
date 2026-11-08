@@ -1,50 +1,67 @@
-// <copyright file="Variant11_ClothingShopBad.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-
 namespace ReviewSamples.Modules.Variants;
 
-public class Variant11_Item
+public enum ClothingCustomerType
 {
-    public string N;
-    public double P;
-    public int Q;
+    Regular,
+    Vip,
+    Gold
 }
 
-public class Variant11_Cart
+public class ClothingItem
 {
-    public List<Variant11_Item> Items = new ();
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int Quantity { get; set; }
 }
 
-public class Variant11_ShopBad
+public class ShoppingCart
 {
-    public double Total(Variant11_Cart c, string type)
+    public List<ClothingItem> Items { get; } = new();
+}
+
+public class ClothingShopFixed
+{
+    private const decimal RegularDiscount = 0.05m;
+    private const decimal VipDiscount = 0.15m;
+    private const decimal GoldDiscount = 0.20m;
+    private const decimal LargeOrderThreshold = 5000m;
+    private const decimal LargeOrderDiscount = 200m;
+
+    public decimal CalculateTotal(ShoppingCart cart, ClothingCustomerType customerType)
     {
-        double sum = 0;
+        if (cart is null)
+            throw new ArgumentNullException(nameof(cart));
+        if (cart.Items is null)
+            throw new ArgumentException("Список товаров не может быть null.", nameof(cart));
 
-        for (int i = 0; i < c.Items.Count; i++)
-        {
-            sum = sum + (c.Items[i].P * c.Items[i].Q);
-        }
+        decimal total = 0m;
 
-        if (type == "regular")
+        foreach (var item in cart.Items)
         {
-            sum = sum - (sum * 0.05);
-        }
-        else if (type == "vip")
-        {
-            sum = sum - (sum * 0.15);
-        }
-        else if (type == "gold")
-        {
-            sum = sum - (sum * 0.2);
-        }
+            if (item is null)
+                throw new ArgumentException("Товар не может быть null.", nameof(cart));
+            if (item.Price < 0)
+                throw new ArgumentOutOfRangeException(nameof(item.Price), "Цена не может быть отрицательной.");
+            if (item.Quantity <= 0)
+                throw new ArgumentOutOfRangeException(nameof(item.Quantity), "Количество должно быть положительным.");
 
-        if (sum > 5000)
-        {
-            sum = sum - 200;
+            total += item.Price * item.Quantity;
         }
 
-        return sum;
+        total -= total * GetDiscountRate(customerType);
+
+        if (total > LargeOrderThreshold)
+            total -= LargeOrderDiscount;
+
+        return Math.Max(0, total);
     }
+
+    private static decimal GetDiscountRate(ClothingCustomerType customerType) =>
+        customerType switch
+        {
+            ClothingCustomerType.Regular => RegularDiscount,
+            ClothingCustomerType.Vip => VipDiscount,
+            ClothingCustomerType.Gold => GoldDiscount,
+            _ => 0m
+        };
 }

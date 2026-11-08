@@ -222,10 +222,40 @@ static void RunVariant(int n)
 
         case 11:
             {
-                var s = new Variant11_ShopBad();
-                var c = new Variant11_Cart();
-                c.Items.Add(new Variant11_Item { N = "Shirt", P = 1200, Q = 2 });
-                Console.WriteLine($"Total: {s.Total(c, "vip")}");
+                Console.WriteLine("ТЕСТИРОВАНИЕ ИСПРАВЛЕННОЙ ВЕРСИИ");
+                var fixedShop = new ClothingShopFixed();
+
+                var cart1 = new ShoppingCart();
+                cart1.Items.Add(new ClothingItem { Name = "Shirt", Price = 1200, Quantity = 2 });
+                Console.WriteLine($"Тест 1 (Vip, 2x1200): {fixedShop.CalculateTotal(cart1, ClothingCustomerType.Vip):F2}");
+
+                var cart2 = new ShoppingCart();
+                cart2.Items.Add(new ClothingItem { Name = "Coat", Price = 6000, Quantity = 1 });
+                Console.WriteLine($"Тест 2 (Regular, 6000): {fixedShop.CalculateTotal(cart2, ClothingCustomerType.Regular):F2}");
+
+                var cart3 = new ShoppingCart();
+                Console.WriteLine($"Тест 3 (Пустая корзина): {fixedShop.CalculateTotal(cart3, ClothingCustomerType.Regular):F2}");
+
+                try
+                {
+                    fixedShop.CalculateTotal(null!, ClothingCustomerType.Regular);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Тест 4 (Null корзина): {ex.GetType().Name} - {ex.Message}");
+                }
+
+                var cart5 = new ShoppingCart();
+                cart5.Items.Add(new ClothingItem { Name = "Hat", Price = -100, Quantity = 1 });
+                try
+                {
+                    fixedShop.CalculateTotal(cart5, ClothingCustomerType.Vip);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Тест 5 (Отрицательная цена): {ex.GetType().Name} - {ex.Message}");
+                }
+
                 break;
             }
 
